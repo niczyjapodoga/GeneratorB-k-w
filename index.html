@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Kansino Offline 🎰</title>
   <style>
+    /* Twój styl bez zmian */
     @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
 
     body {
@@ -266,105 +267,159 @@
   const nonszalantWinDiv = document.getElementById("nonszalant-win");
   const wifeBetDiv = document.getElementById("wife-bet");
 
-function updateBudget() {
-  budgetDisplay.textContent = budget;
-  // Jeśli budżet jest mniejszy niż minimalny bet (10), ustaw bet na 0
-  if(budget < 10) {
-    bet = 0;
-  } else {
-    // Upewnij się, że bet nie jest większy niż budżet
-    if(bet > budget) bet = budget;
-    // Upewnij się, że bet nie jest mniejszy niż 10, jeśli budżet >= 10
-    if(bet < 10) bet = 10;
+  function updateBudget() {
+    budgetDisplay.textContent = budget;
+
+    // Minimalny bet to 10 jeśli budżet >= 10, inaczej 0
+    if(budget < 10){
+      bet = 0;
+    } else {
+      if(bet < 10) bet = 10;
+      if(bet > budget) bet = budget;
+    }
+
+    betDisplay.textContent = bet;
+
+    if(budget < 10 && !wifeBetUsed){
+      wifeBetDiv.style.display = "block";
+    } else {
+      wifeBetDiv.style.display = "none";
+    }
+
+    spinButton.disabled = cooldown || bet > budget || bet < 10;
   }
-  betDisplay.textContent = bet;
 
-  // Pokaż przycisk obstawiania żony tylko jeśli budżet <=0 i opcja nie użyta
-  if(budget < 10 && !wifeBetUsed){
-    wifeBetDiv.style.display = "block";
-  } else {
-    wifeBetDiv.style.display = "none";
+  function changeBet(amount) {
+    if(cooldown) return;
+
+    if(budget < 10){
+      bet = 0;
+    } else {
+      bet += amount;
+      if(bet < 10) bet = 10;
+      if(bet > budget) bet = budget;
+    }
+    updateBudget();
   }
-  // Wyłącz przycisk spin jeśli cooldown lub bet większy niż budżet lub budżet mniejszy niż minimalny bet
-  spinButton.disabled = cooldown || bet > budget || budget < 10;
-}
 
-function changeBet(amount) {
-  if(cooldown) return;
-  if(budget < 10) {
-    bet = 0;
-  } else {
-    bet += amount;
-    if(bet < 10) bet = 10;
-    if(bet > budget) bet = budget;
+  function fullBet() {
+    if(cooldown) return;
+    if(budget >= 10){
+      bet = budget;
+    } else {
+      bet = 0;
+    }
+    updateBudget();
   }
-  updateBudget();
-}
 
-function fullBet() {
-  if(cooldown) return;
-  bet = budget >= 10 ? budget : 0;
-  updateBudget();
-}
-
-async function spin() {
-  if(cooldown || bet > budget || budget < 10 || bet < 10) return;
-  cooldown = true;
-  spinButton.disabled = true;
-  wifeBetDiv.style.pointerEvents = "none";
-  message.style.display = "none";
-
-  budget -= bet;
-  updateBudget();
-
-  pullLever();
-
-  const spinDuration = [1500, 2500, 3500];
-  const spinInterval = 100;
-  let intervals = [];
-
-  for(let i=0; i<3; i++) {
-    let elapsed = 0;
-    intervals[i] = setInterval(() => {
-      reelsImgs[i].src = images[Math.floor(Math.random() * images.length)];
-      elapsed += spinInterval;
-      if(elapsed >= spinDuration[i]) {
-        clearInterval(intervals[i]);
-        reelsImgs[i].src = images[Math.floor(Math.random() * images.length)];
-        if(i === 2) {
-          checkResult();
-        }
-      }
-    }, spinInterval);
+  function pullLever() {
+    if(cooldown) return;
+    const lever = document.querySelector('.lever');
+    lever.style.transform = 'rotate(50deg)';
+    setTimeout(() => {
+      lever.style.transform = 'rotate(0deg)';
+    }, 300);
   }
-}
 
-function checkResult() {
-  const getFilename = (src) => src.split('/').pop();
-  const srcs = Array.from(reelsImgs).map(img => getFilename(img.src));
+  async function spin() {
+    if(cooldown || bet > budget || bet < 10) return;
+    cooldown = true;
+    spinButton.disabled = true;
+    wifeBetDiv.style.pointerEvents = "none";
+    message.style.display = "none";
 
-  if(srcs[0] === srcs[1] && srcs[1] === srcs[2]) {
-    let winAmount = bet * 10;
-    budget += winAmount;
-    showMessage(`🎉 SIGMA WIN! Wygrana: ${winAmount} 💰`, "#00ff00");
-    showSigmaWin();
-  } else if(srcs[0] === srcs[1] || srcs[1] === srcs[2] || srcs[0] === srcs[2]) {
-    let winAmount = bet * 3;
-    budget += winAmount;
-    showMessage(`💥 NONSZALANT WIN! Wygrana: ${winAmount} 💰`, "#ff69b4");
-    showNonszalantWin();
-  } else {
-    showMessage("😂 Przegranko!", "#ff0000");
-  }
-  updateBudget();
+    budget -= bet;
+    updateBudget();
 
-  setTimeout(() => {
+    pullLever();
+
+    const spinDuration = [1500, 2500, 3500];
+    const spinInterval = 100;
+    let intervals = [];
+
+    for(let i=0; i<3; i++) {
+      let elapsed = 0;
+      intervals[i] = setInterval(() => {
+        reelsImgs[i].src = images[Math.floor(Math.random()*images.length)];
+      }, spinInterval);
+    }
+
+    await new Promise(r => setTimeout(r, spinDuration[0]));
+    clearInterval(intervals[0]);
+    reelsImgs[0].src = images[Math.floor(Math.random()*images.length)];
+    await new Promise(r => setTimeout(r, spinDuration[1]-spinDuration[0]));
+    clearInterval(intervals[1]);
+    reelsImgs[1].src = images[Math.floor(Math.random()*images.length)];
+    await new Promise(r => setTimeout(r, spinDuration[2]-spinDuration[1]));
+    clearInterval(intervals[2]);
+    reelsImgs[2].src = images[Math.floor(Math.random()*images.length)];
+
+    checkWin();
     cooldown = false;
-    spinButton.disabled = bet > budget || budget < 10;
-    wifeBetDiv.style.pointerEvents = "auto";
-  }, 4000);
-}
-</script>
+    updateBudget();
+  }
 
+  function checkWin() {
+    // Sprawdzamy czy 3 obrazki takie same:
+    const srcs = [...reelsImgs].map(img => img.src);
+    const lastPart = srcs.map(s => s.substring(s.lastIndexOf('/')+1)); // bierzemy nazwę pliku, by porównać
+
+    if(lastPart[0] === lastPart[1] && lastPart[1] === lastPart[2]){
+      // Wygrana
+
+      const winnings = bet * 10;
+      budget += winnings;
+      updateBudget();
+
+      if(lastPart[0].includes("Zrzut ekranu 2025-05-25 131156.png")){
+        showSigmaWin();
+      } else {
+        showNonszalantWin();
+      }
+    } else {
+      // Przegrana
+      message.textContent = "Niestety, spróbuj ponownie...";
+      message.style.display = "block";
+
+      if(budget < 10 && !wifeBetUsed){
+        wifeBetDiv.style.display = "block";
+      }
+    }
+  }
+
+  function showSigmaWin() {
+    sigmaWinDiv.style.display = "flex";
+    setTimeout(() => {
+      sigmaWinDiv.style.display = "none";
+    }, 4000);
+  }
+
+  function showNonszalantWin() {
+    nonszalantWinDiv.style.display = "flex";
+    setTimeout(() => {
+      nonszalantWinDiv.style.display = "none";
+    }, 4000);
+  }
+
+  function wifeBet() {
+    if(wifeBetUsed) return;
+
+    wifeBetUsed = true;
+    wifeBetDiv.style.display = "none";
+
+    const success = Math.random() < 0.5;
+    if(success){
+      budget += 100;
+      message.textContent = "WYGRANA! +100💰 za ryzyko!";
+    } else {
+      budget = 0;
+      message.textContent = "PRZEGRAŁEŚ wszystko! 😱";
+    }
+    message.style.display = "block";
+    updateBudget();
+  }
+
+  updateBudget();
+</script>
 </body>
 </html>
