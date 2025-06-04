@@ -5,13 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ultra Beka Generator</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap');
 
     body {
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(270deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
+      background-size: 800% 800%;
+      animation: gradientBG 10s ease infinite;
+      font-family: 'Shadows Into Light', cursive;
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -19,40 +21,45 @@
       justify-content: center;
       height: 100vh;
       overflow: hidden;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+    }
+
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
     }
 
     h1 {
       font-size: 3rem;
       margin-bottom: 30px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
 
     #beka {
-      font-size: 2rem;
+      font-size: 2.2rem;
       margin: 20px;
       text-align: center;
-      max-width: 600px;
+      max-width: 700px;
       opacity: 0;
       transition: opacity 0.5s ease;
     }
 
     button {
-      padding: 15px 30px;
+      padding: 18px 36px;
       background: #ff65a3;
       border: none;
-      border-radius: 30px;
-      font-size: 1.2rem;
+      border-radius: 40px;
+      font-size: 1.5rem;
       font-weight: 600;
       color: #fff;
       cursor: pointer;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
       transition: all 0.3s ease;
     }
 
     button:disabled {
-      background: #aaa;
+      background: #999;
       cursor: not-allowed;
-      transform: none;
     }
 
     button:hover:not(:disabled) {
@@ -119,7 +126,7 @@
       void bekaElement.offsetWidth;
       bekaElement.classList.add('fade-in');
 
-      // Wyłącz przycisk na 3 sekundy (cooldown)
+      // Wyłącz przycisk na 3 sekundy
       button.disabled = true;
       setTimeout(() => {
         button.disabled = false;
