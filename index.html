@@ -1,21 +1,17 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>Kansino Offline 🎰</title>
+  <meta charset="UTF-8" />
+  <title>Kansino Offline 🎰 - PRO</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
 
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       background: radial-gradient(circle, #111, #222);
       color: #fff;
       font-family: 'Luckiest Guy', cursive;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
       height: 100vh;
       overflow: hidden;
     }
@@ -51,12 +47,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
+      position: relative;
     }
 
     .reel img {
       max-width: 90%;
       max-height: 90%;
       border-radius: 5px;
+      transition: transform 0.7s ease;
     }
 
     .lever {
@@ -71,6 +70,7 @@
       cursor: pointer;
       transform-origin: top center;
       transition: transform 0.3s ease;
+      user-select: none;
     }
 
     .lever:active {
@@ -108,6 +108,7 @@
       color: #fff;
       cursor: pointer;
       margin-top: 20px;
+      user-select: none;
     }
 
     button:disabled {
@@ -115,79 +116,290 @@
       cursor: not-allowed;
     }
 
+    /* Animacja obrotu slotu */
+    .spinning img {
+      animation: spin-reel 0.7s linear infinite;
+    }
+
+    @keyframes spin-reel {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Sigma Win animacja */
+    .sigma-win {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 5rem;
+      color: #00ff00;
+      text-shadow: 0 0 20px #0f0;
+      animation: sigma-flash 1s infinite alternate;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .sigma-win img {
+      width: 200px;
+      margin-top: 10px;
+      animation: sigma-img-spin 2s linear infinite;
+    }
+    @keyframes sigma-flash {
+      0% { color: #00ff00; }
+      100% { color: #007700; }
+    }
+    @keyframes sigma-img-spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+
+    /* Nonszalant Win animacja */
+    .nonszalant-win {
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 4rem;
+      color: #ff69b4;
+      text-shadow: 0 0 15px #ff1493;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: nonsz-flash 1.5s infinite alternate;
+    }
+    .nonszalant-win img {
+      width: 180px;
+      margin-top: 10px;
+      animation: nonsz-img-bounce 1.5s infinite;
+    }
+    @keyframes nonsz-flash {
+      0% { color: #ff69b4; }
+      100% { color: #ff1493; }
+    }
+    @keyframes nonsz-img-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    /* Budżet i obstawianie */
+    #budget {
+      margin-top: 10px;
+      font-size: 2rem;
+      color: #fff;
+      user-select: none;
+    }
+
+    #bet-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    #bet-controls button {
+      background: #2196f3;
+    }
+
+    #wife-bet {
+      margin-top: 20px;
+      font-size: 1.8rem;
+      color: #f33;
+      cursor: pointer;
+      user-select: none;
+      display: none;
+    }
+    #wife-bet:hover {
+      text-decoration: underline;
+    }
+
   </style>
 </head>
 <body>
 
-  <h1>KANSINO OFFLINE 🎰</h1>
+  <h1>KANSINO OFFLINE 🎰 - PRO</h1>
 
   <div class="slot-machine">
     <div class="reels">
-      <div class="reel"><img src="ChatGPT Image 27 kwi 2025, 16_15_08.png" alt=""></div>
-      <div class="reel"><img src="chomikchinczyk.jpg" alt=""></div>
-      <div class="reel"><img src="chomiczek.png" alt=""></div>
+      <div class="reel"><img src="chatgpt.png" alt="slot1" /></div>
+      <div class="reel"><img src="chomikchinczyk.jpg" alt="slot2" /></div>
+      <div class="reel"><img src="chomiczek.png" alt="slot3" /></div>
     </div>
     <div class="lever" onclick="pullLever()"></div>
   </div>
 
-  <div class="message" id="message"></div>
+  <div id="budget">Budżet: <span id="budget-amount">500</span> 💰</div>
+  <div id="bet-controls">
+    <button onclick="changeBet(-10)">-10</button>
+    <div>Obstaw: <span id="bet-amount">50</span> 💰</div>
+    <button onclick="changeBet(10)">+10</button>
+  </div>
 
   <button id="spinButton" onclick="spin()">Kręć!</button>
 
   <div class="laughing-face">
-    <img src="chomiczek.png" alt="hahaha">
+    <img src="chomiczek.png" alt="hahaha" />
   </div>
 
-  <script>
-    const images = ["ChatGPT Image 27 kwi 2025, 16_15_08.png", "chomikchinczyk.jpg", "chomiczek.png", "img4.png", "img5.png"];
-    let cooldown = false;
+  <div class="message" id="message"></div>
 
-    function pullLever() {
-      const lever = document.querySelector('.lever');
-      lever.style.transform = 'rotate(50deg)';
-      setTimeout(() => {
-        lever.style.transform = 'rotate(0deg)';
-      }, 300);
+  <div id="sigma-win" class="sigma-win" style="display:none;">
+    SIGMA WIN! 🎉
+    <img src="screen_sigma.png" alt="sigma win" />
+  </div>
+
+  <div id="nonszalant-win" class="nonszalant-win" style="display:none;">
+    NONSZALANT WIN! 😎
+    <img src="screen_nonszalant.png" alt="nonszalant win" />
+  </div>
+
+  <div id="wife-bet" onclick="wifeBet()" title="Ostro ryzykuj!">
+    OBSTAW SWOJĄ ŻONĘ! (RISK 50% szans na +100💰)
+  </div>
+
+<script>
+  const images = ["chatgpt.png", "chomikchinczyk.jpg", "chomiczek.png", "screen1.png", "screen2.png"];
+  let cooldown = false;
+  let budget = 500;
+  let bet = 50;
+
+  const reelsImgs = document.querySelectorAll('.reel img');
+  const message = document.getElementById("message");
+  const spinButton = document.getElementById("spinButton");
+  const budgetDisplay = document.getElementById("budget-amount");
+  const betDisplay = document.getElementById("bet-amount");
+  const sigmaWinDiv = document.getElementById("sigma-win");
+  const nonszalantWinDiv = document.getElementById("nonszalant-win");
+  const wifeBetDiv = document.getElementById("wife-bet");
+  const slotMachineDiv = document.querySelector('.slot-machine');
+
+  function updateBudget() {
+    budgetDisplay.textContent = budget;
+    betDisplay.textContent = bet;
+    if (budget <= 0) {
+      spinButton.disabled = true;
+      wifeBetDiv.style.display = "block";
+    } else {
+      spinButton.disabled = false;
+      wifeBetDiv.style.display = "none";
     }
+  }
 
-    function spin() {
-      if (cooldown) return;
-      cooldown = true;
-      document.getElementById("spinButton").disabled = true;
-      document.getElementById("message").style.display = "none";
+  function changeBet(amount) {
+    bet += amount;
+    if (bet < 10) bet = 10;
+    if (bet > budget) bet = budget;
+    updateBudget();
+  }
 
-      const reels = document.querySelectorAll('.reel img');
-      reels.forEach(reel => {
+  function pullLever() {
+    const lever = document.querySelector('.lever');
+    lever.style.transform = 'rotate(50deg)';
+    setTimeout(() => {
+      lever.style.transform = 'rotate(0deg)';
+    }, 300);
+  }
+
+  function spin() {
+    if (cooldown || budget < bet) return;
+    cooldown = true;
+    budget -= bet;
+    updateBudget();
+    spinButton.disabled = true;
+    message.style.display = "none";
+    sigmaWinDiv.style.display = "none";
+    nonszalantWinDiv.style.display = "none";
+
+    // Animacja obracania slotów
+    reelsImgs.forEach(img => {
+      img.parentElement.classList.add('spinning');
+    });
+
+    pullLever();
+
+    // Symuluj obrót i zmien obrazki po 1.5s
+    setTimeout(() => {
+      reelsImgs.forEach(img => {
+        img.parentElement.classList.remove('spinning');
         const randomImg = images[Math.floor(Math.random() * images.length)];
-        reel.src = randomImg;
+        img.src = randomImg;
       });
 
-      // wynik po krótkim czasie
+      const srcs = Array.from(reelsImgs).map(r => r.src);
+      const baseName = (str) => str.split('/').pop();
+
+      // Sprawdź wygraną
+      if (
+        baseName(srcs[0]) === baseName(srcs[1]) &&
+        baseName(srcs[1]) === baseName(srcs[2])
+      ) {
+        // Sigma win - mega wygrana!
+        budget += bet * 5;
+        updateBudget();
+        sigmaWinDiv.style.display = "flex";
+        message.style.display = "none";
+      } else if (
+        baseName(srcs[0]) === baseName(srcs[1]) ||
+        baseName(srcs[1]) === baseName(srcs[2]) ||
+        baseName(srcs[0]) === baseName(srcs[2])
+      ) {
+        // Nonszalant win - mniejsza wygrana
+        budget += bet * 2;
+        updateBudget();
+        nonszalantWinDiv.style.display = "flex";
+        message.style.display = "none";
+      } else {
+        // Przegrana
+        message.textContent = "😂 Przegranko!";
+        message.style.color = "#ff0000";
+        message.style.display = "block";
+      }
+
+      // Odblokuj spin po 3s
       setTimeout(() => {
-        const srcs = Array.from(reels).map(r => r.src);
-        const winMessage = document.getElementById("message");
+        spinButton.disabled = false;
+        cooldown = false;
+        sigmaWinDiv.style.display = "none";
+        nonszalantWinDiv.style.display = "none";
+      }, 3000);
+    }, 1500);
+  }
 
-        if (srcs[0] === srcs[1] && srcs[1] === srcs[2]) {
-          winMessage.textContent = "🎉 MEGA WIN! 🎉";
-          winMessage.style.color = "#00ff00";
-        } else if (srcs[0] === srcs[1] || srcs[1] === srcs[2] || srcs[0] === srcs[2]) {
-          winMessage.textContent = "💥 BIG WIN! 💥";
-          winMessage.style.color = "#ffd700";
-        } else {
-          winMessage.textContent = "😂 Przegranko!";
-          winMessage.style.color = "#ff0000";
-        }
+  function wifeBet() {
+    if (budget > 0) return; // działa tylko gdy brak hajsu
+    if (cooldown) return;
+    cooldown = true;
+    wifeBetDiv.style.pointerEvents = "none";
 
-        winMessage.style.display = "block";
+    message.style.display = "none";
 
-        // odblokuj przycisk po 3s
-        setTimeout(() => {
-          document.getElementById("spinButton").disabled = false;
-          cooldown = false;
-        }, 3000);
-      }, 500);
+    // 50% szansy
+    const win = Math.random() < 0.5;
+
+    if (win) {
+      budget += 100;
+      message.textContent = "🎉 Twoja żona wygrała dla Ciebie 100 hajsu! 🎉";
+      message.style.color = "#00ff00";
+      message.style.display = "block";
+    } else {
+      message.textContent = "😢 Niestety, żona przegrała... Nic nie dostajesz.";
+      message.style.color = "#ff0000";
+      message.style.display = "block";
     }
-  </script>
+
+    updateBudget();
+
+    setTimeout(() => {
+      cooldown = false;
+      wifeBetDiv.style.pointerEvents = "auto";
+      if (budget > 0) wifeBetDiv.style.display = "none";
+    }, 3000);
+  }
+
+  updateBudget();
+</script>
 
 </body>
 </html>
