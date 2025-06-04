@@ -1,147 +1,193 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ultra Beka Generator</title>
+  <meta charset="UTF-8">
+  <title>Kansino Offline 🎰</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
 
     body {
       margin: 0;
       padding: 0;
-      background: linear-gradient(270deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
-      background-size: 800% 800%;
-      animation: gradientBG 10s ease infinite;
-      font-family: 'Shadows Into Light', cursive;
+      background: radial-gradient(circle, #111, #222);
       color: #fff;
+      font-family: 'Luckiest Guy', cursive;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
       overflow: hidden;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
-    }
-
-    @keyframes gradientBG {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
     }
 
     h1 {
-      font-size: 3rem;
-      margin-bottom: 30px;
+      font-size: 4rem;
+      margin: 20px 0;
+      color: #ffd700;
+      text-shadow: 0 0 10px #ff0000;
     }
 
-    #beka {
-      font-size: 2.2rem;
-      margin: 20px;
-      text-align: center;
-      max-width: 700px;
-      opacity: 0;
-      transition: opacity 0.5s ease;
+    .slot-machine {
+      display: flex;
+      align-items: center;
+      background: #333;
+      border: 10px solid #555;
+      border-radius: 20px;
+      padding: 20px;
+      position: relative;
     }
 
-    button {
-      padding: 18px 36px;
-      background: #ff65a3;
-      border: none;
-      border-radius: 40px;
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #fff;
-      cursor: pointer;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
+    .reels {
+      display: flex;
+      gap: 20px;
     }
 
-    button:disabled {
-      background: #999;
-      cursor: not-allowed;
-    }
-
-    button:hover:not(:disabled) {
-      background: #ff4382;
-      transform: scale(1.05);
-    }
-
-    .fade-in {
-      opacity: 1;
-    }
-
-    #jumpscare {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: black;
+    .reel {
+      width: 120px;
+      height: 120px;
+      background: #000;
+      border: 5px solid #999;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
+    }
+
+    .reel img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 5px;
+    }
+
+    .lever {
+      width: 20px;
+      height: 150px;
+      background: #ff0000;
+      border: 3px solid #fff;
+      border-radius: 10px;
+      position: absolute;
+      right: -40px;
+      top: 30px;
+      cursor: pointer;
+      transform-origin: top center;
+      transition: transform 0.3s ease;
+    }
+
+    .lever:active {
+      transform: rotate(50deg);
+    }
+
+    .message {
+      font-size: 3rem;
+      margin: 30px;
+      color: #ff0;
+      text-shadow: 0 0 15px #f00;
       display: none;
     }
 
-    #jumpscare img {
-      max-width: 80%;
-      max-height: 80%;
+    .laughing-face {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 100px;
+      height: 100px;
     }
+
+    .laughing-face img {
+      width: 100%;
+      border-radius: 50%;
+      box-shadow: 0 0 20px #f00;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #ff4081;
+      border: none;
+      border-radius: 30px;
+      font-size: 1.5rem;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+
   </style>
 </head>
 <body>
-  <h1>🔥 Ultra Beka Generator 🔥</h1>
-  <div id="beka">Kliknij przycisk!</div>
-  <button id="btn" onclick="wygenerujBeke()">Generuj</button>
 
-  <div id="jumpscare">
-    <img src="ChatGPT Image 27 kwi 2025, 16_15_08.png" alt="Jumpscare">
+  <h1>KANSINO OFFLINE 🎰</h1>
+
+  <div class="slot-machine">
+    <div class="reels">
+      <div class="reel"><img src="img1.png" alt=""></div>
+      <div class="reel"><img src="img2.png" alt=""></div>
+      <div class="reel"><img src="img3.png" alt=""></div>
+    </div>
+    <div class="lever" onclick="pullLever()"></div>
+  </div>
+
+  <div class="message" id="message"></div>
+
+  <button id="spinButton" onclick="spin()">Kręć!</button>
+
+  <div class="laughing-face">
+    <img src="laugh.png" alt="hahaha">
   </div>
 
   <script>
-    const beki = [
-      "Jesteś bąkiem Rodego.",
-      "Rode jest tak stary, że uczył Rajsaja w przedszkolu.",
-      "Jesteś zwierzęciem ochnika. Przygotuj się...",
-      "Twój vibe: pomarszczony batonik z promocji.",
-      "Dziś masz +500 punktów do bycia śmiesznym ziemniakiem.",
-      "Twoja aura przypomina wiadro majonezu w upale.",
-      "Masz dziś twarz osoby, która wylała sok na klawiaturę."
-    ];
+    const images = ["img1.png", "img2.png", "img3.png", "img4.png", "img5.png"];
+    let cooldown = false;
 
-    function wygenerujBeke() {
-      const bekaElement = document.getElementById('beka');
-      const button = document.getElementById('btn');
-      const jumpscare = document.getElementById('jumpscare');
-
-      // Losuj tekst
-      const randomIndex = Math.floor(Math.random() * beki.length);
-      const tekst = beki[randomIndex];
-      bekaElement.textContent = tekst;
-
-      // Animacja fade-in
-      bekaElement.classList.remove('fade-in');
-      void bekaElement.offsetWidth;
-      bekaElement.classList.add('fade-in');
-
-      // Wyłącz przycisk na 3 sekundy
-      button.disabled = true;
+    function pullLever() {
+      const lever = document.querySelector('.lever');
+      lever.style.transform = 'rotate(50deg)';
       setTimeout(() => {
-        button.disabled = false;
-      }, 3000);
+        lever.style.transform = 'rotate(0deg)';
+      }, 300);
+    }
 
-      // Jumpscare jeśli o ochniku
-      if (tekst.includes("ochnika")) {
+    function spin() {
+      if (cooldown) return;
+      cooldown = true;
+      document.getElementById("spinButton").disabled = true;
+      document.getElementById("message").style.display = "none";
+
+      const reels = document.querySelectorAll('.reel img');
+      reels.forEach(reel => {
+        const randomImg = images[Math.floor(Math.random() * images.length)];
+        reel.src = randomImg;
+      });
+
+      // wynik po krótkim czasie
+      setTimeout(() => {
+        const srcs = Array.from(reels).map(r => r.src);
+        const winMessage = document.getElementById("message");
+
+        if (srcs[0] === srcs[1] && srcs[1] === srcs[2]) {
+          winMessage.textContent = "🎉 MEGA WIN! 🎉";
+          winMessage.style.color = "#00ff00";
+        } else if (srcs[0] === srcs[1] || srcs[1] === srcs[2] || srcs[0] === srcs[2]) {
+          winMessage.textContent = "💥 BIG WIN! 💥";
+          winMessage.style.color = "#ffd700";
+        } else {
+          winMessage.textContent = "😂 Przegranko!";
+          winMessage.style.color = "#ff0000";
+        }
+
+        winMessage.style.display = "block";
+
+        // odblokuj przycisk po 3s
         setTimeout(() => {
-          jumpscare.style.display = 'flex';
-          setTimeout(() => {
-            jumpscare.style.display = 'none';
-          }, 1200);
-        }, 2000);
-      }
+          document.getElementById("spinButton").disabled = false;
+          cooldown = false;
+        }, 3000);
+      }, 500);
     }
   </script>
+
 </body>
 </html>
