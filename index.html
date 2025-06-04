@@ -55,7 +55,7 @@
       max-width: 90%;
       max-height: 90%;
       border-radius: 5px;
-      transition: transform 0.7s ease;
+      user-select: none;
     }
 
     .lever {
@@ -83,6 +83,7 @@
       color: #ff0;
       text-shadow: 0 0 15px #f00;
       display: none;
+      user-select: none;
     }
 
     .laughing-face {
@@ -116,14 +117,35 @@
       cursor: not-allowed;
     }
 
-    /* Animacja obrotu slotu */
-    .spinning img {
-      animation: spin-reel 0.7s linear infinite;
+    /* Budżet i obstawianie */
+    #budget {
+      margin-top: 10px;
+      font-size: 2rem;
+      color: #fff;
+      user-select: none;
     }
 
-    @keyframes spin-reel {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    #bet-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    #bet-controls button {
+      background: #2196f3;
+    }
+
+    #wife-bet {
+      margin-top: 20px;
+      font-size: 1.8rem;
+      color: #f33;
+      cursor: pointer;
+      user-select: none;
+      display: none;
+    }
+    #wife-bet:hover {
+      text-decoration: underline;
     }
 
     /* Sigma Win animacja */
@@ -183,38 +205,6 @@
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-15px); }
     }
-
-    /* Budżet i obstawianie */
-    #budget {
-      margin-top: 10px;
-      font-size: 2rem;
-      color: #fff;
-      user-select: none;
-    }
-
-    #bet-controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-      align-items: center;
-    }
-
-    #bet-controls button {
-      background: #2196f3;
-    }
-
-    #wife-bet {
-      margin-top: 20px;
-      font-size: 1.8rem;
-      color: #f33;
-      cursor: pointer;
-      user-select: none;
-      display: none;
-    }
-    #wife-bet:hover {
-      text-decoration: underline;
-    }
-
   </style>
 </head>
 <body>
@@ -235,6 +225,7 @@
     <button onclick="changeBet(-10)">-10</button>
     <div>Obstaw: <span id="bet-amount">50</span> 💰</div>
     <button onclick="changeBet(10)">+10</button>
+    <button onclick="fullBet()" title="Obstaw wszystko!">FULL BET</button>
   </div>
 
   <button id="spinButton" onclick="spin()">Kręć!</button>
@@ -247,12 +238,12 @@
 
   <div id="sigma-win" class="sigma-win" style="display:none;">
     SIGMA WIN! 🎉
-    <img src="screen_sigma.png" alt="sigma win" />
+    <img src="Zrzut ekranu 2025-05-25 131156.png" alt="sigma win" />
   </div>
 
   <div id="nonszalant-win" class="nonszalant-win" style="display:none;">
     NONSZALANT WIN! 😎
-    <img src="screen_nonszalant.png" alt="nonszalant win" />
+    <img src="Zrzut ekranu 2025-05-23 200140.png" alt="nonszalant win" />
   </div>
 
   <div id="wife-bet" onclick="wifeBet()" title="Ostro ryzykuj!">
@@ -260,10 +251,11 @@
   </div>
 
 <script>
-  const images = ["chatgpt.png", "chomikchinczyk.jpg", "chomiczek.png", "screen1.png", "screen2.png"];
+  const images = ["Zrzut ekranu 2025-06-01 164255.png", "chomikchinczyk.jpg", "chomiczek.png", "Zrzut ekranu 2025-05-26 221805.png", "ChatGPT Image 27 kwi 2025, 16_15_08.png"];
   let cooldown = false;
   let budget = 500;
   let bet = 50;
+  let wifeBetUsed = false;
 
   const reelsImgs = document.querySelectorAll('.reel img');
   const message = document.getElementById("message");
@@ -273,28 +265,34 @@
   const sigmaWinDiv = document.getElementById("sigma-win");
   const nonszalantWinDiv = document.getElementById("nonszalant-win");
   const wifeBetDiv = document.getElementById("wife-bet");
-  const slotMachineDiv = document.querySelector('.slot-machine');
 
   function updateBudget() {
     budgetDisplay.textContent = budget;
     betDisplay.textContent = bet;
-    if (budget <= 0) {
-      spinButton.disabled = true;
+    if(budget <= 0 && !wifeBetUsed){
       wifeBetDiv.style.display = "block";
     } else {
-      spinButton.disabled = false;
       wifeBetDiv.style.display = "none";
     }
+    spinButton.disabled = cooldown || bet > budget;
   }
 
   function changeBet(amount) {
+    if(cooldown) return;
     bet += amount;
-    if (bet < 10) bet = 10;
-    if (bet > budget) bet = budget;
+    if(bet < 10) bet = 10;
+    if(bet > budget) bet = budget;
+    updateBudget();
+  }
+
+  function fullBet() {
+    if(cooldown) return;
+    bet = budget;
     updateBudget();
   }
 
   function pullLever() {
+    if(cooldown) return;
     const lever = document.querySelector('.lever');
     lever.style.transform = 'rotate(50deg)';
     setTimeout(() => {
@@ -302,74 +300,101 @@
     }, 300);
   }
 
-  function spin() {
-    if (cooldown || budget < bet) return;
+  async function spin() {
+    if(cooldown || bet > budget) return;
     cooldown = true;
+    spinButton.disabled = true;
+    wifeBetDiv.style.pointerEvents = "none";
+    message.style.display = "none";
+
     budget -= bet;
     updateBudget();
-    spinButton.disabled = true;
-    message.style.display = "none";
-    sigmaWinDiv.style.display = "none";
-    nonszalantWinDiv.style.display = "none";
-
-    // Animacja obracania slotów
-    reelsImgs.forEach(img => {
-      img.parentElement.classList.add('spinning');
-    });
 
     pullLever();
 
-    // Symuluj obrót i zmien obrazki po 1.5s
+    // Animacja: stopniowa zmiana obrazków z efektami zwalniania
+
+    // Prędkości zwalniania w ms
+    const spinDuration = [1500, 2500, 3500];
+
+    // Każdy bęben będzie się zmieniał co ~100ms
+    const spinInterval = 100;
+
+    // Zmienna przechowująca intervaly dla zatrzymania
+    let intervals = [];
+
+    for(let i=0; i<3; i++) {
+      let elapsed = 0;
+      intervals[i] = setInterval(() => {
+        reelsImgs[i].src = images[Math.floor(Math.random() * images.length)];
+        elapsed += spinInterval;
+        if(elapsed >= spinDuration[i]) {
+          clearInterval(intervals[i]);
+          // Zatrzymaj na losowym obrazku
+          reelsImgs[i].src = images[Math.floor(Math.random() * images.length)];
+          if(i === 2) {
+            // Po zatrzymaniu ostatniego bębna ocen wynik
+            checkResult();
+          }
+        }
+      }, spinInterval);
+    }
+  }
+
+  function checkResult() {
+    // Pobierz src w czystej formie (nazwy plików, nie pełne URL)
+    const getFilename = (src) => src.split('/').pop();
+
+    const srcs = Array.from(reelsImgs).map(img => getFilename(img.src));
+
+    // Sprawdzenie wyników
+    if(srcs[0] === srcs[1] && srcs[1] === srcs[2]) {
+      // MEGA WIN - Sigma Win
+      let winAmount = bet * 10;
+      budget += winAmount;
+      showMessage(`🎉 SIGMA WIN! Wygrana: ${winAmount} 💰`, "#00ff00");
+      showSigmaWin();
+    } else if(srcs[0] === srcs[1] || srcs[1] === srcs[2] || srcs[0] === srcs[2]) {
+      // BIG WIN - Nonszalant Win
+      let winAmount = bet * 3;
+      budget += winAmount;
+      showMessage(`💥 NONSZALANT WIN! Wygrana: ${winAmount} 💰`, "#ff69b4");
+      showNonszalantWin();
+    } else {
+      showMessage("😂 Przegranko!", "#ff0000");
+    }
+    updateBudget();
+
     setTimeout(() => {
-      reelsImgs.forEach(img => {
-        img.parentElement.classList.remove('spinning');
-        const randomImg = images[Math.floor(Math.random() * images.length)];
-        img.src = randomImg;
-      });
+      cooldown = false;
+      spinButton.disabled = bet > budget;
+      wifeBetDiv.style.pointerEvents = "auto";
+    }, 4000);
+  }
 
-      const srcs = Array.from(reelsImgs).map(r => r.src);
-      const baseName = (str) => str.split('/').pop();
+  function showMessage(text, color) {
+    message.textContent = text;
+    message.style.color = color;
+    message.style.display = "block";
+  }
 
-      // Sprawdź wygraną
-      if (
-        baseName(srcs[0]) === baseName(srcs[1]) &&
-        baseName(srcs[1]) === baseName(srcs[2])
-      ) {
-        // Sigma win - mega wygrana!
-        budget += bet * 5;
-        updateBudget();
-        sigmaWinDiv.style.display = "flex";
-        message.style.display = "none";
-      } else if (
-        baseName(srcs[0]) === baseName(srcs[1]) ||
-        baseName(srcs[1]) === baseName(srcs[2]) ||
-        baseName(srcs[0]) === baseName(srcs[2])
-      ) {
-        // Nonszalant win - mniejsza wygrana
-        budget += bet * 2;
-        updateBudget();
-        nonszalantWinDiv.style.display = "flex";
-        message.style.display = "none";
-      } else {
-        // Przegrana
-        message.textContent = "😂 Przegranko!";
-        message.style.color = "#ff0000";
-        message.style.display = "block";
-      }
+  function showSigmaWin() {
+    sigmaWinDiv.style.display = "flex";
+    setTimeout(() => {
+      sigmaWinDiv.style.display = "none";
+    }, 3500);
+  }
 
-      // Odblokuj spin po 3s
-      setTimeout(() => {
-        spinButton.disabled = false;
-        cooldown = false;
-        sigmaWinDiv.style.display = "none";
-        nonszalantWinDiv.style.display = "none";
-      }, 3000);
-    }, 1500);
+  function showNonszalantWin() {
+    nonszalantWinDiv.style.display = "flex";
+    setTimeout(() => {
+      nonszalantWinDiv.style.display = "none";
+    }, 3500);
   }
 
   function wifeBet() {
-    if (budget > 0) return; // działa tylko gdy brak hajsu
-    if (cooldown) return;
+    if(wifeBetUsed || cooldown) return;
+
     cooldown = true;
     wifeBetDiv.style.pointerEvents = "none";
 
@@ -378,23 +403,20 @@
     // 50% szansy
     const win = Math.random() < 0.5;
 
-    if (win) {
+    if(win) {
       budget += 100;
-      message.textContent = "🎉 Twoja żona wygrała dla Ciebie 100 hajsu! 🎉";
-      message.style.color = "#00ff00";
-      message.style.display = "block";
+      showMessage("🎉 Twoja żona wygrała dla Ciebie 100 hajsu! 🎉", "#00ff00");
     } else {
-      message.textContent = "😢 Niestety, żona przegrała... Nic nie dostajesz.";
-      message.style.color = "#ff0000";
-      message.style.display = "block";
+      showMessage("😢 Niestety, żona przegrała... Nic nie dostajesz.", "#ff0000");
     }
 
+    wifeBetUsed = true;
+    wifeBetDiv.style.display = "none";
     updateBudget();
 
     setTimeout(() => {
       cooldown = false;
       wifeBetDiv.style.pointerEvents = "auto";
-      if (budget > 0) wifeBetDiv.style.display = "none";
     }, 3000);
   }
 
